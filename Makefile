@@ -1,5 +1,5 @@
 TARGET   := ./dstatus
-CXXFLAGS := -std=c++11 -pedantic-errors -ggdb -Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-used-but-marked-unused -Wno-exit-time-destructors -Wno-padded
+CXXFLAGS := -std=c++11 -pedantic-errors -ggdb -Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-used-but-marked-unused -Wno-exit-time-destructors -Wno-padded -Wno-missing-prototypes
 CXX      := clang++
 LIBS     := -lc++
 EXT      := cpp
