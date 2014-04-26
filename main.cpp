@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <cstdio>
+#include <cmath>
 
 #include <iostream>
 #include <exception>
@@ -11,6 +12,7 @@
 #include <locale>
 #include <vector>
 #include <algorithm>
+#include <fstream>
 
 #include <X11/Xlib.h>
 #include <sensors/sensors.h>
@@ -84,6 +86,33 @@ void print_temp(std::ostream& out)
 }
 
 
+void print_battery(std::ostream& out)
+{
+	std::ifstream file(battery_path + u8"present");
+	file.exceptions(std::ios_base::badbit);
+
+	bool present = false;
+	file >> present;
+	if (!present)
+	{
+		out << u8"[N/A]";
+		return;
+	}
+	file.close();
+
+	file.open(u8"charge_full_design");
+	unsigned long cfd = 0;
+	file >> cfd;
+	file.close();
+
+	file.open(u8"charge_now");
+	unsigned long cn = 0;
+	file >> cn;
+
+	out << u8"[" << std::round((static_cast<double>(cn) / cfd) * 100) << u8"%]";
+}
+
+
 int main()
 {
 	Display* display = nullptr;
@@ -104,6 +133,8 @@ int main()
 		std::locale loc("");
 		out.imbue(loc);
 
+		print_battery(out);
+		out << u8" ";
 		print_temp(out);
 		out << u8" ";
 		print_time(out);
