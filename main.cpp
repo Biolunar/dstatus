@@ -1,13 +1,20 @@
+#include "config.hpp"
+
 #include <cstdlib>
 #include <ctime>
+#include <cstdio>
 
 #include <iostream>
 #include <exception>
 #include <stdexcept>
 #include <sstream>
 #include <locale>
+#include <vector>
+#include <algorithm>
 
 #include <X11/Xlib.h>
+#include <sensors/sensors.h>
+#include <sensors/error.h>
 
 
 void print_time(std::ostream& out)
@@ -23,6 +30,60 @@ void print_time(std::ostream& out)
 }
 
 
+static std::vector<int> sub_numbers;
+static sensors_chip_name const* chip = nullptr;
+
+
+void enum_chips()
+{
+	int chip_nr = 0;
+	while ((chip = sensors_get_detected_chips(nullptr, &chip_nr)))
+	{
+		if (chip_name == chip->prefix)
+		{
+			int feature_nr = 0;
+			sensors_feature const* feat = nullptr;
+			while ((feat = sensors_get_features(chip, &feature_nr)))
+			{
+				if (feat->type == SENSORS_FEATURE_TEMP)
+				{
+					sensors_subfeature const* sub = sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_TEMP_INPUT);
+					if (!sub)
+						throw std::runtime_error(u8"Could not get chip subfeature.");
+					sub_numbers.push_back(sub->number);
+				}
+			}
+
+			return;
+		}
+	}
+
+	if (!chip)
+		throw std::runtime_error(u8"Could not find chip.");
+}
+
+
+void print_temp(std::ostream& out)
+{
+	double temp = 0.0;
+	for (auto const& i : sub_numbers)
+	{
+		double val = 0.0;
+		auto ret = sensors_get_value(chip, i, &val);
+		if (ret < 0)
+		{
+			std::ostringstream err;
+			err << u8"Could not get sensor value (" << sensors_strerror(ret) << u8")";
+			throw std::runtime_error(err.str());
+		}
+
+		temp = std::max(temp, val);
+	}
+
+	out << u8"[" << temp << u8"°C]";
+}
+
+
 int main()
 {
 	Display* display = nullptr;
@@ -33,10 +94,18 @@ int main()
 		if (!display)
 			throw std::runtime_error(u8"Could not open display.");
 
+		if (sensors_init(nullptr))
+			throw std::runtime_error(u8"Could not initialize sensors.");
+
+		std::cout << u8"libsensors version: " << libsensors_version << std::endl;
+		enum_chips();
+
 		std::ostringstream out;
 		std::locale loc("");
 		out.imbue(loc);
 
+		print_temp(out);
+		out << u8" ";
 		print_time(out);
 
 		std::cout << out.str() << std::endl;
@@ -54,6 +123,7 @@ int main()
 		return EXIT_FAILURE;
 	}
 
+	sensors_cleanup();
 	if (display)
 		::XCloseDisplay(display);
 
