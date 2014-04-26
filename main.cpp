@@ -100,12 +100,12 @@ void print_battery(std::ostream& out)
 	}
 	file.close();
 
-	file.open(u8"charge_full_design");
+	file.open(battery_path + u8"charge_full_design");
 	unsigned long cfd = 0;
 	file >> cfd;
 	file.close();
 
-	file.open(u8"charge_now");
+	file.open(battery_path + u8"charge_now");
 	unsigned long cn = 0;
 	file >> cn;
 
