@@ -4,6 +4,7 @@
 #include <ctime>
 #include <cstdio>
 #include <cmath>
+#include <csignal>
 
 #include <iostream>
 #include <exception>
@@ -17,6 +18,10 @@
 #include <X11/Xlib.h>
 #include <sensors/sensors.h>
 #include <sensors/error.h>
+#include <unistd.h>
+
+
+static bool running = true;
 
 
 void print_time(std::ostream& out)
@@ -113,12 +118,21 @@ void print_battery(std::ostream& out)
 }
 
 
+void handler(int)
+{
+	running = false;
+}
+
+
 int main()
 {
 	Display* display = nullptr;
 
 	try
 	{
+		std::signal(SIGINT, &handler);
+		std::signal(SIGTERM, &handler);
+
 		display = ::XOpenDisplay(nullptr);
 		if (!display)
 			throw std::runtime_error(u8"Could not open display.");
@@ -126,22 +140,28 @@ int main()
 		if (sensors_init(nullptr))
 			throw std::runtime_error(u8"Could not initialize sensors.");
 
-		std::cout << u8"libsensors version: " << libsensors_version << std::endl;
+		//std::cout << u8"libsensors version: " << libsensors_version << std::endl;
 		enum_chips();
 
 		std::ostringstream out;
 		std::locale loc("");
-		out.imbue(loc);
+		while (running)
+		{
+			out.imbue(loc);
 
-		print_battery(out);
-		out << u8" ";
-		print_temp(out);
-		out << u8" ";
-		print_time(out);
+			print_battery(out);
+			out << u8" ";
+			print_temp(out);
+			out << u8" ";
+			print_time(out);
 
-		std::cout << out.str() << std::endl;
-		::XStoreName(display, DefaultRootWindow(display), out.str().c_str());
-		::XSync(display, False);
+			//std::cout << out.str() << std::endl;
+			::XStoreName(display, DefaultRootWindow(display), out.str().c_str());
+			::XSync(display, False);
+			out.str(u8"");
+
+			sleep(1);
+		}
 	}
 	catch (std::exception const& err)
 	{
