@@ -1,8 +1,8 @@
 TARGET   := ./dstatus
-CXXFLAGS := -std=c++11 -stdlib=libc++ -pedantic-errors -ggdb -Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-used-but-marked-unused -Wno-exit-time-destructors -Wno-padded -Wno-missing-prototypes -Wno-global-constructors
-CXX      := clang++
-LIBS     := -lc++abi -lX11 -lsensors
-EXT      := cpp
+CXXFLAGS := -std=c11 -pedantic-errors -ggdb -Weverything -Wno-c99-compat -Wno-unused-parameter
+CXX      := clang
+LIBS     := -lX11 -lsensors
+EXT      := c
 BUILDDIR := build
 
 override BUILDDIR := $(strip $(BUILDDIR))
