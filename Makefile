@@ -1,5 +1,5 @@
 TARGET   := ./dstatus
-CXXFLAGS := -std=c11 -pedantic-errors -ggdb -Weverything -Wno-c99-compat
+CXXFLAGS := -std=c11 -pedantic-errors -ggdb -Weverything -Wno-c99-compat -Wno-unused-parameter
 CXX      := clang
 LIBS     := -lX11 -lsensors
 EXT      := c
