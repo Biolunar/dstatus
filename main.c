@@ -143,33 +143,7 @@ static size_t print_temperature(char* buffer, size_t size, struct temperature* t
 	return ret < 0 ? 0 : (size_t)ret;
 }
 
-/*void print_battery(std::ostream& out)
-{
-	std::ifstream file(std::string{battery_path} + u8"present");
-	file.exceptions(std::ios_base::badbit);
-
-	bool present = false;
-	file >> present;
-	if (!present)
-	{
-		out << u8"[N/A]";
-		return;
-	}
-	file.close();
-
-	file.open(std::string{battery_path} + u8"charge_full_design");
-	unsigned long cfd = 0;
-	file >> cfd;
-	file.close();
-
-	file.open(std::string{battery_path} + u8"charge_now");
-	unsigned long cn = 0;
-	file >> cn;
-
-	out << u8"[" << std::round((static_cast<double>(cn) / cfd) * 100) << u8"%]";
-}*/
-
-int main()
+int main(void)
 {
 	Display* display = 0;
 	struct temperature* temperature = 0;
@@ -222,3 +196,4 @@ cleanup:
 
 	return ret;
 }
+
